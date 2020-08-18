@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Hard Rock Solution - Song Lyric App</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <!-- Custom css -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <nav class="navbar  navbar-dark my-3">
+            <a class="navbar-brand" href="#">
+                <img src="images/logo.png" alt="Hard Rock Solution">
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavId" aria-controls="collapsibleNavId" aria-expanded="false" aria-label="Toggle navigation">
+                <img src="images/toggler-icon.svg" alt="">
+            </button>
+            <div class="collapse navbar-collapse" id="collapsibleNavId">
+                <ul class="navbar-nav ml-auto mt-2 mt-lg-0">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <main class="content-area">
+            <div class="search-bar col-md-6 mx-auto">
+                <h1 class="text-center">Lyrics Search</h1>
+                <div class="search-box my-5">
+                    <input id="song" type="text" class="form-control" placeholder="Enter artist or song name">
+                    <button id="search" class="btn btn-success search-btn">Search</button>
+                </div>
+            </div>
+            
+            <!-- === Fancy results === -->
+            <div id="results" class="search-result col-md-8 mx-auto py-4">
+                <!-- single result -->
+                
+            </div>
+            <!-- Single Lyrics -->
+            <div id="lyrics">
+
+            </div>
+            
+
+
+        </main>
+    </div>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <!-- Custom Script Here -->
+    <script>
+        
+    //search result     
+document.getElementById('search').addEventListener('click', function (){
+
+    document.getElementById('results').innerHTML = '';
+    document.getElementById('lyrics').innerHTML = '';
+    const inputMusic = document.getElementById('song');
+    const keyword = inputMusic.value;
+    fetch(`https://api.lyrics.ovh/suggest/${keyword}`)
+    .then(res => res.json())
+    .then(data => {   
+        storedData = data;
+        for (let i = 0; i < data.data.length; i++) {
+            const title = data.data[i].title;
+            const artistName = data.data[i].artist.name;
+            const id = data.data[i].id;
+            document.getElementById('results').innerHTML +=
+             `<div class="single-result row align-items-center my-3 p-3">
+                <div class="col-md-6">
+                    <h3 class="lyrics-name"> ${title} </h3>
+                    <p class="author lead">Album by <span> ${artistName} </span></p>
+                </div>
+                <div class="col-md-6 text-md-right text-center">
+                    
+                    <a href="#lyrics"><button onClick="getLyrics(${id})" class="btn btn-success">Get Lyrics</button></a>
+                </div>
+            </div>`
+            if(i == 9){
+                break;
+            }   
+        }
+        
+    })
+});
+
+ const result = document.getElementById("results")
+
+//lyrics function
+function getLyrics(id){
+    for (let i = 0; i < 10; i++) {
+        if(storedData.data[i].id == id){
+            const artistName = storedData.data[i].artist.name;
+            const songTitle = storedData.data[i].title;
+            fetch(`https://api.lyrics.ovh/v1/${artistName}/${songTitle}`)
+            .then(res => res.json())
+            .then(data => {
+                let lyrics = data.lyrics.replace(/(\r\n|\r|\n)/g, '<br>');
+                if(lyrics == undefined){
+                    lyrics = `Lyrics Not Found`;
+                }
+                
+                document.getElementById('lyrics').innerHTML = 
+                `<div class="single-lyrics text-center">
+                                                                            
+                    <h2 class="text-success mb-4">Song Lyrics</h2>
+                    <h5>${lyrics}</h5>
+                    <a class="nav-link text-white" href="">Go Top <span class="sr-only">(current)</span></a>
+                    <a  onClick="back()" class="nav-link text-white" href="#">Go Back<span class="sr-only">(current)</span></a>
+                </div>`
+            })
+    }
+    } 
+    result.style.display= "none"
+}
+function back(){
+    document.getElementById("results").style.display= "block"
+    document.getElementById("lyrics").style.display= "none"
+
+}
+    </script>
+
+</body>
+
+</html>
